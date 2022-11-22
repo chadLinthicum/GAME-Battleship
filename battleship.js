@@ -19,9 +19,9 @@ let model = {
   shipLength: 3,
   shipsSunk: 0,
   ships: [
-    { locations: ["06", "16", "26"], hits: ["", "", ""] },
-    { locations: ["24", "34", "44"], hits: ["", "", ""] },
-    { locations: ["10", "11", "12"], hits: ["", "", ""] },
+    { locations: ["0", "0", "0"], hits: ["", "", ""] },
+    { locations: ["0", "0", "0"], hits: ["", "", ""] },
+    { locations: ["0", "0", "0"], hits: ["", "", ""] },
   ],
   fire: function (guess) {
     for (let i = 0; i < this.numShips; i++) {
@@ -48,6 +48,54 @@ let model = {
       }
     }
     return true;
+  },
+  generateShipLocations: function () {
+    var locations;
+    for (var i = 0; i < this.numShips; i++) {
+      do {
+        locations = this.generateShip();
+      } while (this.collision(locations));
+      this.ships[i].locations = locations;
+    }
+    console.log("Ships array: ");
+    console.log(this.ships);
+  },
+  generateShip: function () {
+    //Generates number between 0 and 1
+    let direction = Math.floor(Math.random() * 2);
+    let row, col;
+    if (direction === 1) {
+      //horizontal
+      row = Math.floor(Math.random() * this.boardSize);
+      col = Math.floor(Math.random() * (this.boardSize - this.shipLength + 1));
+      //Add 1 so we get number between 0 and 4, not 0 and 3 as starting point
+    } else {
+      //vertical
+      row = Math.floor(Math.random() * (this.boardSize - this.shipLength + 1));
+      col = Math.floor(Math.random() * this.boardSize);
+    }
+
+    let newShipLocations = [];
+    for (let i = 0; i < this.shipLength; i++) {
+      if (direction === 1) {
+        newShipLocations.push(row + "" + (col + i));
+      } else {
+        newShipLocations.push(row + i + "" + col);
+      }
+    }
+    return newShipLocations;
+  },
+
+  collision: function (locations) {
+    for (i = 0; i < this.numShips; i++) {
+      let ship = this.ships[i];
+      for (j = 0; j < locations.length; j++) {
+        if (ship.locations.indexOf(locations[j]) >= 0) {
+          return true;
+        }
+      }
+    }
+    return false;
   },
 };
 
@@ -93,20 +141,21 @@ function parseGuess(guess) {
   }
 }
 
-init = () => {
+function init() {
   let fireButton = document.getElementById("fireButton");
   fireButton.onclick = handleFireButton;
   let guessInput = document.getElementById("guessInput");
   guessInput.onkeydown = handleKeyPress;
-};
+  model.generateShipLocations();
+}
 
-handleKeyPress = (e) => {
+function handleKeyPress(e) {
   let fireButton = document.getElementById("fireButton");
   if (e.keyCode === 13) {
     fireButton.click();
     return false;
   }
-};
+}
 
 handleFireButton = () => {
   let guessInput = document.getElementById("guessInput");
@@ -115,4 +164,4 @@ handleFireButton = () => {
   guessInput.value = "";
 };
 
-window.onload = init();
+window.onload = init;
